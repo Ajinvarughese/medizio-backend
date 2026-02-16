@@ -55,7 +55,7 @@ public class AppointmentService {
         LocalDate requestedDate = LocalDate.parse(availability.getDate(), DateTimeFormatter.ISO_DATE); // e.g., "2025-06-13"
         LocalTime requestedTime = LocalTime.parse(availability.getTime(), DateTimeFormatter.ISO_TIME); // e.g., "14:15"
 
-        List<Appointment> appointments = doctor.getAppointments();
+        List<Appointment> appointments = repository.findByDoctorId(id);
 
         if(appointments.size() == 20) {
             return false;

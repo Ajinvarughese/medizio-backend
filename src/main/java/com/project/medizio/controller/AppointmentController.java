@@ -3,6 +3,7 @@ import com.project.medizio.dto.Availability;
 import com.project.medizio.entity.Appointment;
 import com.project.medizio.enums.AppointmentStatus;
 import com.project.medizio.service.AppointmentService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +12,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointment")
+@AllArgsConstructor
 public class AppointmentController {
 
-    @Autowired
-    private AppointmentService service;
+    private final AppointmentService service;
 
     @PostMapping
     public Appointment bookAppointment(@RequestBody Appointment appointment) {

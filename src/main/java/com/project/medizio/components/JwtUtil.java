@@ -1,12 +1,12 @@
 package com.project.medizio.components;
 
+import com.project.medizio.entity.Doctor;
 import com.project.medizio.entity.Patient;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import com.project.finance_api.entity.User;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -26,16 +26,16 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generateToken(Patient patient) {
+    public String generateToken(String email) {
         return Jwts.builder()
-                .setSubject(patient.getPhone())
+                .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractPhone(String token) {
+    public String extractKey(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

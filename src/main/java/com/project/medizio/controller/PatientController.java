@@ -32,6 +32,7 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
 
+    @GetMapping("/auth/token")
      public ResponseEntity<?> getUserByToken(
             @RequestHeader("Authorization") String authHeader) {
 

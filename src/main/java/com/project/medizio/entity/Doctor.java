@@ -17,8 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Doctor extends EntityDetails {
 
-        @Column(unique = true)
-        private Long doctorId;
+        @Column(unique = true, nullable = false)
+        private String email;
         private String password;
 
         private String specialization;

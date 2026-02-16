@@ -24,7 +24,7 @@ public class PatientService {
     public Login savePatient(Patient patient) {
         patient.setPassword(passwordEncoder.encode(patient.getPassword()));
         patientRepository.save(patient);
-        return new Login("", jwtUtil.generateToken(patient));
+        return new Login("", jwtUtil.generateToken(patient.getEmail()));
     }
 
     public List<Patient> getAllPatients() {
@@ -36,15 +36,15 @@ public class PatientService {
     }
 
     public Patient getPatientByToken(String token) {
-        String phone = jwtUtil.extractPhone(token);
-        return  patientRepository.findByPhone(phone).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        String phone = jwtUtil.extractKey(token);
+        return  patientRepository.findByEmail(phone).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
     public Login loginPatient(Login login) {
-        Patient existing = patientRepository.findByPhone(login.getLoginId())
+        Patient existing = patientRepository.findByEmail(login.getLoginId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: "+login.getLoginId()));
-        if(existing.getPassword().equals(login.getPassword())) {
-            return new Login("", jwtUtil.generateToken(existing));
+        if(passwordEncoder.matches(login.getPassword(), existing.getPassword())) {
+            return new Login("", jwtUtil.generateToken(existing.getEmail()));
         }
         throw new IllegalArgumentException("User name or password is wrong");
     }

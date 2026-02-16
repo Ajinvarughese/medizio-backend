@@ -15,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Patient extends EntityDetails {
         private String name;
-        private String password;
         @Column(unique = true, nullable = false)
-        private String phone;
+        private String email;
+        private String password;
         private String dob;
 }

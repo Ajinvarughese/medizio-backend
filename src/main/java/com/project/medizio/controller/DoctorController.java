@@ -2,8 +2,12 @@ package com.project.medizio.controller;
 
 
 import com.project.medizio.components.FileUpload;
+import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Doctor;
+import com.project.medizio.entity.Patient;
 import com.project.medizio.service.DoctorService;
+import io.jsonwebtoken.ExpiredJwtException;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,18 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/doctor")
+@AllArgsConstructor
 public class DoctorController {
     private final DoctorService doctorService;
     private final FileUpload fileUpload;
 
-    @Autowired
-    public DoctorController(DoctorService doctorService, FileUpload fileUpload) {
-        this.doctorService = doctorService;
-        this.fileUpload = fileUpload;
-    }
 
     @PostMapping(
         path = "/file/upload",
@@ -35,7 +36,7 @@ public class DoctorController {
     }
 
     @PostMapping
-    public ResponseEntity<Doctor> addDoctor(@RequestBody Doctor doctor) {
+    public ResponseEntity<String> addDoctor(@RequestBody Doctor doctor) {
         return ResponseEntity.ok(doctorService.saveDoctor(doctor));
     }
 
@@ -45,8 +46,8 @@ public class DoctorController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Doctor> loginDoctor(@RequestBody Doctor doctor) {
-        return ResponseEntity.ok(doctorService.loginDoctor(doctor));
+    public ResponseEntity<Login> loginDoctor(@RequestBody Login login) {
+        return ResponseEntity.ok(doctorService.loginDoctor(login));
     }
 
     @PutMapping("/{id}")
@@ -55,9 +56,26 @@ public class DoctorController {
     }
 
 
-    @GetMapping("/{id}")
-    public Doctor getDoctor(@PathVariable Long id) {
-        return doctorService.getDoctorById(id);
+    @GetMapping("/auth/token")
+    public ResponseEntity<?> getDoctor(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "").trim();
+
+
+        try {
+            Doctor doctor = doctorService.getDoctorByToken(token);
+            return ResponseEntity.ok(doctor);
+
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(401).body(
+                Map.of(
+                    "status", 401,
+                    "error", "UNAUTHORIZED",
+                    "message", "Token expired. Please login again."
+                )
+            );
+        }
     }
 
     @DeleteMapping("/{id}")
