@@ -44,6 +44,7 @@ public class DiseaseService {
             return new Disease(
                     predictedResponse.getResult(),
                     predictedResponse.getMessage(),
+                    predictedResponse.getRiskClass(),
                     diseaseName,
                     patientService.getPatientById(id)
             );

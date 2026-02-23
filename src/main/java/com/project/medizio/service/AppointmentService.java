@@ -2,14 +2,12 @@ package com.project.medizio.service;
 
 import com.project.medizio.dto.Availability;
 import com.project.medizio.entity.Appointment;
-import com.project.medizio.entity.Doctor;
 import com.project.medizio.enums.AppointmentStatus;
+import com.project.medizio.exception.DoctorUnavailableException;
 import com.project.medizio.repository.AppointmentRepository;
 import com.project.medizio.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -17,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @AllArgsConstructor
@@ -25,8 +24,16 @@ public class AppointmentService {
     private final DoctorRepository doctorRepository;
 
     public Appointment book(Appointment appointment) {
-        appointment.setStatus(AppointmentStatus.BOOKED);
-        return repository.save(appointment);
+        Availability availability = new Availability();
+        availability.setDate(appointment.getDate());
+        availability.setTime(appointment.getTime());
+        availability.setDoctorId(appointment.getDoctor().getId());
+
+        if(getAvailability(availability)) {
+             appointment.setStatus(AppointmentStatus.BOOKED);
+            return repository.save(appointment);
+        }
+        throw new DoctorUnavailableException("Appointment not available");
     }
 
     public List<Appointment> getAll() {
@@ -47,34 +54,56 @@ public class AppointmentService {
         return repository.findByPatientId(id);
     }
 
-    public Boolean getAvailability(Long id, Availability availability) {
-        Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: "+id));
+    public Boolean getAvailability(Availability availability) {
 
-        // Parse date and time from string
-        LocalDate requestedDate = LocalDate.parse(availability.getDate(), DateTimeFormatter.ISO_DATE); // e.g., "2025-06-13"
-        LocalTime requestedTime = LocalTime.parse(availability.getTime(), DateTimeFormatter.ISO_TIME); // e.g., "14:15"
+        doctorRepository.findById(availability.getDoctorId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Doctor not found with id: " + availability.getDoctorId()));
 
-        List<Appointment> appointments = repository.findByDoctorId(id);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        if(appointments.size() == 20) {
+        LocalDate requestedDate = LocalDate.parse(
+                availability.getDate(),
+                dateFormatter
+        );
+
+        LocalTime requestedTime = LocalTime.parse(
+                availability.getTime().trim(),
+                DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.ENGLISH)
+        );
+
+        List<Appointment> appointments =
+                repository.findByDoctorId(availability.getDoctorId());
+
+        if (appointments.size() == 20) {
             return false;
         }
 
         for (Appointment appt : appointments) {
-            // Parse appointment date and time
-            LocalDate apptDate = LocalDate.parse(appt.getDate(), DateTimeFormatter.ISO_DATE);
-            LocalTime apptTime = LocalTime.parse(appt.getTime(), DateTimeFormatter.ISO_TIME);
+
+            LocalDate apptDate = LocalDate.parse(
+                    appt.getDate(),
+                    dateFormatter
+            );
+
+            LocalTime apptTime = LocalTime.parse(
+                    appt.getTime(),
+                    DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.ENGLISH)
+            );
 
             if (apptDate.equals(requestedDate)) {
-                long minutesDiff = Math.abs(Duration.between(apptTime, requestedTime).toMinutes());
-                if (minutesDiff < 15) {
-                    return false; // Conflict
+
+                long minutesDiff = Math.abs(
+                        Duration.between(apptTime, requestedTime).toMinutes()
+                );
+
+                if (minutesDiff < 10) {
+                    return false;
                 }
             }
         }
 
-        return true; // No conflict
+        return true;
     }
 }
 

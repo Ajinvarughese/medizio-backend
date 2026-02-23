@@ -2,6 +2,7 @@ package com.project.medizio.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.medizio.components.EntityDetails;
+import com.project.medizio.enums.DaysOfWeek;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,18 +18,33 @@ import java.util.List;
 @AllArgsConstructor
 public class Doctor extends EntityDetails {
 
+        private String name;
         @Column(unique = true, nullable = false)
         private String email;
         private String password;
 
-        private String specialization;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "speciality_id", nullable = false)
+        private Speciality speciality;
+
         private Boolean availability;
         private String picture;
         private Integer experience;
-        private String fromTime;
-        private String toTime;
+        private String startTime;
+        private String endTime;
         private String document;
+
+        private String location;
+        private String dob;
+
         @ElementCollection
         private List<String> unavailableDates;
+
+        @ElementCollection(targetClass = DaysOfWeek.class)
+        @Enumerated(EnumType.STRING)
+        @CollectionTable(name = "doctor_unavailable_days",
+                         joinColumns = @JoinColumn(name = "doctor_id"))
+        @Column(name = "day")
+        private List<DaysOfWeek> unavailableDays;
 }
 

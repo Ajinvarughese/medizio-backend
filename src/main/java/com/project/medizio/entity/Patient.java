@@ -19,4 +19,5 @@ public class Patient extends EntityDetails {
         private String email;
         private String password;
         private String dob;
+        private String location;
 }

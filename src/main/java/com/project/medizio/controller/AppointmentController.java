@@ -4,7 +4,6 @@ import com.project.medizio.entity.Appointment;
 import com.project.medizio.enums.AppointmentStatus;
 import com.project.medizio.service.AppointmentService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,9 +31,9 @@ public class AppointmentController {
         return ResponseEntity.ok(service.getAppointmentByUser(id));
     }
 
-    @PostMapping("/availability/{id}")
-    public ResponseEntity<Boolean> isAvailable(@PathVariable Long id, @RequestBody Availability availability) {
-        return ResponseEntity.ok(service.getAvailability(id, availability));
+    @PostMapping("/availability")
+    public ResponseEntity<Boolean> isAvailable(@RequestBody Availability availability) {
+        return ResponseEntity.ok(service.getAvailability(availability));
     }
 
     @GetMapping("/doctor/{id}")

@@ -18,6 +18,9 @@ public class Appointment extends EntityDetails {
     private String date;
     private String time;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String reason;
+
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 

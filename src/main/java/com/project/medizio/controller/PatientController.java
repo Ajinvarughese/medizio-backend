@@ -38,7 +38,6 @@ public class PatientController {
 
         String token = authHeader.replace("Bearer ", "").trim();
 
-
         try {
             Patient patient = patientService.getPatientByToken(token);
             return ResponseEntity.ok(patient);

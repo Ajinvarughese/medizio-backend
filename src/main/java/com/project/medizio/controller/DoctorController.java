@@ -2,6 +2,7 @@ package com.project.medizio.controller;
 
 
 import com.project.medizio.components.FileUpload;
+import com.project.medizio.dto.DoctorRegisterRequest;
 import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Doctor;
 import com.project.medizio.entity.Patient;
@@ -30,14 +31,14 @@ public class DoctorController {
         path = "/file/upload",
         consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
         produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<String>> addFiles(@RequestParam("file") List<MultipartFile> files) throws IOException {
+    public ResponseEntity<List<String>> addFiles(@RequestPart("file") List<MultipartFile> files) throws IOException {
         List<String> fileUrls = fileUpload.uploadFiles(files);
         return ResponseEntity.ok(fileUrls);
     }
 
     @PostMapping
-    public ResponseEntity<String> addDoctor(@RequestBody Doctor doctor) {
-        return ResponseEntity.ok(doctorService.saveDoctor(doctor));
+    public ResponseEntity<Login> addDoctor(@RequestBody DoctorRegisterRequest doctorRegisterRequest) {
+        return ResponseEntity.ok(doctorService.saveDoctor(doctorRegisterRequest));
     }
 
     @GetMapping
@@ -50,9 +51,9 @@ public class DoctorController {
         return ResponseEntity.ok(doctorService.loginDoctor(login));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Doctor> updateDoctor(@PathVariable Long id, @RequestBody Doctor updatedDoctor) {
-        return ResponseEntity.ok(doctorService.updateDoctor(id, updatedDoctor));
+    @PutMapping
+    public ResponseEntity<Doctor> updateDoctor(@RequestBody Doctor updatedDoctor) {
+        return ResponseEntity.ok(doctorService.updateDoctor(updatedDoctor));
     }
 
 
