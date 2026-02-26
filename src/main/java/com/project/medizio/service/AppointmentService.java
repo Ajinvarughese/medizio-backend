@@ -7,6 +7,7 @@ import com.project.medizio.exception.DoctorUnavailableException;
 import com.project.medizio.repository.AppointmentRepository;
 import com.project.medizio.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,20 @@ public class AppointmentService {
         Appointment appointment = repository.findById(id).orElseThrow();
         appointment.setStatus(newStatus);
         return repository.save(appointment);
+    }
+
+    public Appointment updateAppointment(Appointment appointment) {
+        Appointment existing = repository.findById(appointment.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: "+appointment.getId()));
+
+        if(appointment.getNote() != null) {
+            existing.setNote(appointment.getNote());
+        }
+        if (appointment.getDocument() != null) {
+            existing.setDocument(appointment.getDocument());
+        }
+
+        return repository.save(existing);
     }
 
     public List<Appointment> getAppointmentByUser(Long id) {
@@ -104,6 +119,11 @@ public class AppointmentService {
         }
 
         return true;
+    }
+
+    @Transactional
+    public void deleteAppointment(Long id) {
+        repository.deleteById(id);
     }
 }
 

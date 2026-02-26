@@ -26,8 +26,9 @@ public class Disease extends EntityDetails {
 
     private DiseaseName disease;
 
+    private Double confidence;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "patient_id")
     private Patient patient;
 }

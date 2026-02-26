@@ -12,4 +12,5 @@ public class PredictedResponse {
     private Boolean result;
     private String message;
     private RiskClass riskClass;
+    private Double confidence;
 }

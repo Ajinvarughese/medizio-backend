@@ -49,7 +49,6 @@ public class DoctorService {
                 .orElseThrow(() ->
                         new EntityNotFoundException("User not found with id: " + login.getLoginId())
                 );
-        System.out.println("Pass: "+login.getPassword() + "\n Hash Pass: "+existing.getPassword());
         if (passwordEncoder.matches(login.getPassword(), existing.getPassword())) {
             return new Login("", jwtUtil.generateToken(existing.getEmail()));
         }

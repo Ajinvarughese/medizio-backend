@@ -42,7 +42,7 @@ public class FileUpload {
         Path filePath = Paths.get(uploadDir + File.separator + uniqueFileName);
         file.transferTo(filePath.toFile());
 
-        return serverUrl + "/media/" + uniqueFileName;
+        return serverUrl + "/api/media/" + uniqueFileName;
     }
 
     public List<String> uploadFiles(List<MultipartFile> files) throws IOException {

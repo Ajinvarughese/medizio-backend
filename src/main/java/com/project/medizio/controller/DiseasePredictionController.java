@@ -8,10 +8,14 @@ import com.project.medizio.model.Heart;
 import com.project.medizio.model.Parkinson;
 import com.project.medizio.service.DiseaseService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.management.InstanceNotFoundException;
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/disease")
@@ -34,5 +38,25 @@ public class DiseasePredictionController {
     @PostMapping("/predict/parkinson")
     public ResponseEntity<Disease> predictParkinson(@RequestBody Parkinson parkinson, @RequestParam Long patientId) throws InstanceNotFoundException {
         return ResponseEntity.ok(diseaseService.predictDisease(parkinson, patientId));
+    }
+
+    @PostMapping(path = "/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DiseaseInput> uploadDoc(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("disease") String disease
+    ) throws IOException {
+
+        DiseaseInput result = diseaseService.extractDetailsFromPdf(file, disease);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping
+    public ResponseEntity<Disease> saveDisease(@RequestBody Disease disease) {
+        return ResponseEntity.ok(diseaseService.saveDisease(disease));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Disease>> fetchAllDisease(@RequestParam Long patientId) {
+        return ResponseEntity.ok(diseaseService.fetchDiseaseByUser(patientId));
     }
 }

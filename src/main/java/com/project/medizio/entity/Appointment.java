@@ -24,6 +24,11 @@ public class Appointment extends EntityDetails {
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String note;
+
+    private String document;
+
     @ManyToOne
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;

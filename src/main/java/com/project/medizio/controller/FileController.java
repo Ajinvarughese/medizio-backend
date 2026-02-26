@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/media")
+@RequestMapping("/api/media")
 public class FileController {
 
     @GetMapping("/{filename:.+}")
