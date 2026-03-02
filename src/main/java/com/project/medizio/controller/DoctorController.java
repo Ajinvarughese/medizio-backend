@@ -5,11 +5,9 @@ import com.project.medizio.components.FileUpload;
 import com.project.medizio.dto.DoctorRegisterRequest;
 import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Doctor;
-import com.project.medizio.entity.Patient;
 import com.project.medizio.service.DoctorService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +47,15 @@ public class DoctorController {
     @PostMapping("/login")
     public ResponseEntity<Login> loginDoctor(@RequestBody Login login) {
         return ResponseEntity.ok(doctorService.loginDoctor(login));
+    }
+
+    @PutMapping("/update/status")
+    public ResponseEntity<Doctor> updateDoctorStatus(@RequestBody Doctor doctor) {
+        return ResponseEntity.ok(doctorService.updateDoctorStatus(doctor));
+    }
+    @PutMapping("/verify")
+    ResponseEntity<Doctor> verifyDoctor(@RequestBody Doctor doctor) {
+        return ResponseEntity.ok(doctorService.verifyDoctor(doctor));
     }
 
     @PutMapping

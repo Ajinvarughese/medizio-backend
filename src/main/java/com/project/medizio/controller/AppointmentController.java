@@ -41,6 +41,11 @@ public class AppointmentController {
         return ResponseEntity.ok(service.getAvailability(availability));
     }
 
+    @PatchMapping("/update/rating")
+    public ResponseEntity<Appointment> updateRatingOfAppointment(@RequestBody Appointment appointment) {
+        return ResponseEntity.ok(service.addRating(appointment));
+    }
+
     @GetMapping("/doctor/{id}")
     public ResponseEntity<List<Appointment>> getByDoctor(@PathVariable Long id) {
         return ResponseEntity.ok(service.getByDoctor(id));

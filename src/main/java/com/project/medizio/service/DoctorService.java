@@ -4,10 +4,13 @@ import com.project.medizio.components.JwtUtil;
 import com.project.medizio.dto.DoctorRegisterRequest;
 import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Doctor;
-import com.project.medizio.entity.Patient;
 import com.project.medizio.entity.Speciality;
+import com.project.medizio.enums.AccountStatus;
+import com.project.medizio.exception.AccountSuspended;
+import com.project.medizio.exception.DoctorNotVerified;
 import com.project.medizio.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,7 +39,9 @@ public class DoctorService {
         doctor.setStartTime("9:00 AM");
         doctor.setEndTime("6:00 PM");
         doctor.setAvailability(true);
-
+        doctor.setVerified(false);
+        doctor.setRating(0.0);
+        doctor.setAccountStatus(AccountStatus.ACTIVE);
         doctor.setSpeciality(speciality);
 
         doctorRepository.save(doctor);
@@ -49,11 +54,21 @@ public class DoctorService {
                 .orElseThrow(() ->
                         new EntityNotFoundException("User not found with id: " + login.getLoginId())
                 );
+
+        Login res = new Login();
         if (passwordEncoder.matches(login.getPassword(), existing.getPassword())) {
-            return new Login("", jwtUtil.generateToken(existing.getEmail()));
+            res.setLoginId("");
+            res.setPassword(jwtUtil.generateToken(existing.getEmail()));
+        } else {
+            throw new IllegalArgumentException("User id or password must be wrong");
         }
 
-        throw new IllegalArgumentException("User id or password must be wrong");
+        if(!existing.getVerified())
+            throw new DoctorNotVerified("Doctor not authenticated");
+        if(existing.getAccountStatus() == AccountStatus.SUSPENDED)
+            throw new AccountSuspended("Account temporarily suspended");
+
+        return res;
     }
 
     public List<Doctor> getAllDoctors() {
@@ -62,8 +77,14 @@ public class DoctorService {
 
     public Doctor getDoctorByToken(String token) {
         String email = jwtUtil.extractKey(token);
-        return doctorRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+        Doctor doctor = doctorRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+        if(!doctor.getVerified())
+            throw new DoctorNotVerified("Doctor not authenticated");
+        if(doctor.getAccountStatus() == AccountStatus.SUSPENDED)
+            throw new AccountSuspended("Account temporarily suspended");
+        return doctor;
     }
+
 
     public Doctor updateDoctor(Doctor updatedDoctor) {
         Doctor doctor = doctorRepository.findById(updatedDoctor.getId())
@@ -81,7 +102,29 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
 
+    public Doctor updateDoctorStatus(Doctor doctor) {
+            Doctor existing = doctorRepository.findById(doctor.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: "+doctor.getId()));
+
+            existing.setAccountStatus(doctor.getAccountStatus());
+            return doctorRepository.save(existing);
+    }
+
+    public Doctor verifyDoctor(Doctor doctor) {
+        Doctor existing = doctorRepository.findById(doctor.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: "+doctor.getId()));
+        existing.setVerified(Boolean.TRUE);
+        return doctorRepository.save(existing);
+    }
+
+    @Transactional
     public void deleteDoctor(Long id) {
         doctorRepository.deleteById(id);
-}
+    }
+
+
+    public Doctor getDoctorById(Long id) {
+        return doctorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: "+id));
+    }
 }

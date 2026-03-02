@@ -31,6 +31,10 @@ public class PatientController {
     public ResponseEntity<List<Patient>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
+    @PutMapping("/update/status")
+    public ResponseEntity<Patient> updatePatientStatus(@RequestBody Patient patient) {
+        return ResponseEntity.ok(patientService.updatePatientStatus(patient));
+    }
 
     @GetMapping("/auth/token")
      public ResponseEntity<?> getUserByToken(

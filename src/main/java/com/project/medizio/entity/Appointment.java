@@ -29,6 +29,8 @@ public class Appointment extends EntityDetails {
 
     private String document;
 
+    private Integer rating;
+
     @ManyToOne
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;

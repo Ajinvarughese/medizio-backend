@@ -2,6 +2,7 @@ package com.project.medizio.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.medizio.components.EntityDetails;
+import com.project.medizio.enums.AccountStatus;
 import com.project.medizio.enums.DaysOfWeek;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 public class Doctor extends EntityDetails {
 
         private String name;
+
         @Column(unique = true, nullable = false)
         private String email;
         private String password;
@@ -36,6 +38,12 @@ public class Doctor extends EntityDetails {
 
         private String location;
         private String dob;
+        private Double rating;
+
+        private Boolean verified;
+
+        @Enumerated(EnumType.STRING)
+        private AccountStatus accountStatus;
 
         @ElementCollection
         private List<String> unavailableDates;

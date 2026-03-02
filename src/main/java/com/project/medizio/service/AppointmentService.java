@@ -2,7 +2,9 @@ package com.project.medizio.service;
 
 import com.project.medizio.dto.Availability;
 import com.project.medizio.entity.Appointment;
+import com.project.medizio.entity.Doctor;
 import com.project.medizio.enums.AppointmentStatus;
+import com.project.medizio.enums.DaysOfWeek;
 import com.project.medizio.exception.DoctorUnavailableException;
 import com.project.medizio.repository.AppointmentRepository;
 import com.project.medizio.repository.DoctorRepository;
@@ -21,7 +23,7 @@ import java.util.Locale;
 @Service
 @AllArgsConstructor
 public class AppointmentService {
-    private final AppointmentRepository repository;
+    private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
 
     public Appointment book(Appointment appointment) {
@@ -32,27 +34,27 @@ public class AppointmentService {
 
         if(getAvailability(availability)) {
              appointment.setStatus(AppointmentStatus.BOOKED);
-            return repository.save(appointment);
+            return appointmentRepository.save(appointment);
         }
         throw new DoctorUnavailableException("Appointment not available");
     }
 
     public List<Appointment> getAll() {
-        return repository.findAll();
+        return appointmentRepository.findAll();
     }
 
     public List<Appointment> getByDoctor(Long id) {
-        return repository.findByDoctorId(id);
+        return appointmentRepository.findByDoctorId(id);
     }
 
     public Appointment updateStatus(Long id, AppointmentStatus newStatus) {
-        Appointment appointment = repository.findById(id).orElseThrow();
+        Appointment appointment = appointmentRepository.findById(id).orElseThrow();
         appointment.setStatus(newStatus);
-        return repository.save(appointment);
+        return appointmentRepository.save(appointment);
     }
 
     public Appointment updateAppointment(Appointment appointment) {
-        Appointment existing = repository.findById(appointment.getId())
+        Appointment existing = appointmentRepository.findById(appointment.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: "+appointment.getId()));
 
         if(appointment.getNote() != null) {
@@ -62,16 +64,16 @@ public class AppointmentService {
             existing.setDocument(appointment.getDocument());
         }
 
-        return repository.save(existing);
+        return appointmentRepository.save(existing);
     }
 
     public List<Appointment> getAppointmentByUser(Long id) {
-        return repository.findByPatientId(id);
+        return appointmentRepository.findByPatientId(id);
     }
 
     public Boolean getAvailability(Availability availability) {
 
-        doctorRepository.findById(availability.getDoctorId())
+        Doctor doctor = doctorRepository.findById(availability.getDoctorId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Doctor not found with id: " + availability.getDoctorId()));
 
@@ -87,8 +89,18 @@ public class AppointmentService {
                 DateTimeFormatter.ofPattern("h:mm a").withLocale(Locale.ENGLISH)
         );
 
+
+        DaysOfWeek requestedDay = DaysOfWeek.valueOf(
+            requestedDate.getDayOfWeek().name()
+        );
+
+        if (doctor.getUnavailableDays() != null &&
+                doctor.getUnavailableDays().contains(requestedDay)) {
+            return false;
+        }
+
         List<Appointment> appointments =
-                repository.findByDoctorId(availability.getDoctorId());
+                appointmentRepository.findByDoctorId(availability.getDoctorId());
 
         if (appointments.size() == 20) {
             return false;
@@ -121,9 +133,55 @@ public class AppointmentService {
         return true;
     }
 
+    public Appointment addRating(Appointment appointment) {
+
+        Appointment existing = appointmentRepository.findById(appointment.getId())
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Appointment not found with id: " + appointment.getId()
+                        ));
+
+        existing.setRating(appointment.getRating());
+
+        appointmentRepository.save(existing);
+
+        // Recalculate doctor rating
+        Doctor doctor = existing.getDoctor();
+
+        Double updatedRating = calculateDoctorRating(doctor.getId());
+        doctor.setRating(updatedRating);
+
+        doctorRepository.save(doctor);
+
+        return existing;
+    }
+
+
+
+    private Double calculateDoctorRating(Long doctorId) {
+
+        List<Appointment> appointments =
+                appointmentRepository.findByDoctorId(doctorId);
+
+        int sum = 0;
+        int count = 0;
+
+        for (Appointment a : appointments) {
+            if (a.getRating() != null && a.getRating() > 0) {
+                sum += a.getRating();
+                count++;
+            }
+        }
+
+        if (count == 0) return 0.0;
+
+        return (double) sum / count;
+    }
+
+
     @Transactional
     public void deleteAppointment(Long id) {
-        repository.deleteById(id);
+        appointmentRepository.deleteById(id);
     }
 }
 

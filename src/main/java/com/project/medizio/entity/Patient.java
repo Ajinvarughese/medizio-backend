@@ -2,6 +2,7 @@ package com.project.medizio.entity;
 
 
 import com.project.medizio.components.EntityDetails;
+import com.project.medizio.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,4 +21,7 @@ public class Patient extends EntityDetails {
         private String password;
         private String dob;
         private String location;
+
+        @Enumerated(EnumType.STRING)
+        private AccountStatus accountStatus;
 }
