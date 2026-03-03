@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.LOCKED) // 423
-public class AccountSuspended extends RuntimeException {
-    public AccountSuspended(String message) {
+public class AccountSuspendedException extends RuntimeException {
+    public AccountSuspendedException(String message) {
         super(message);
     }
 }

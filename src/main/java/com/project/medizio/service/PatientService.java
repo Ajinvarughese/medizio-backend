@@ -6,8 +6,7 @@ import com.project.medizio.components.JwtUtil;
 import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Patient;
 import com.project.medizio.enums.AccountStatus;
-import com.project.medizio.exception.AccountSuspended;
-import com.project.medizio.exception.DoctorNotVerified;
+import com.project.medizio.exception.AccountSuspendedException;
 import com.project.medizio.repository.PatientRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +30,13 @@ public class PatientService {
         return new Login("", jwtUtil.generateToken(patient.getEmail()));
     }
 
-    public List<Patient> getAllPatients() {
-        return patientRepository.findAll();
+    public Patient getUserById(Long id) {
+        return patientRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: "+id));
     }
 
-    public Patient getPatientById(Long id) {
-
-        return patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: "+id));
+    public List<Patient> getAllPatients() {
+        return patientRepository.findAll();
     }
 
     public Patient getPatientByToken(String token) {
@@ -46,7 +44,7 @@ public class PatientService {
         Patient patient = patientRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if(patient.getAccountStatus() == AccountStatus.SUSPENDED)
-            throw new AccountSuspended("Patient is suspended");
+            throw new AccountSuspendedException("Patient is suspended");
 
         return patient;
     }
@@ -64,13 +62,13 @@ public class PatientService {
         }
 
         if(existing.getAccountStatus() == AccountStatus.SUSPENDED)
-            throw new AccountSuspended("Account temporarily suspended");
+            throw new AccountSuspendedException("Account temporarily suspended");
 
         return res;
     }
 
     public Patient updatePatientStatus(Patient patient) {
-        Patient existing = getPatientById(patient.getId());
+        Patient existing = getUserById(patient.getId());
         existing.setAccountStatus(patient.getAccountStatus());
         return patientRepository.save(existing);
     }

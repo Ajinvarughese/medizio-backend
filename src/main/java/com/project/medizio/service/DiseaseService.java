@@ -55,7 +55,7 @@ public class DiseaseService {
                     predictedResponse.getRiskClass(),
                     diseaseName,
                     predictedResponse.getConfidence(),
-                    patientService.getPatientById(id)
+                    patientService.getUserById(id)
             );
         } catch (RestClientException e) {
             throw new RuntimeException("AI service failed", e);

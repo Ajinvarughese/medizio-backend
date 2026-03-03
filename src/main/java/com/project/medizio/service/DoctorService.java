@@ -6,8 +6,8 @@ import com.project.medizio.dto.Login;
 import com.project.medizio.entity.Doctor;
 import com.project.medizio.entity.Speciality;
 import com.project.medizio.enums.AccountStatus;
-import com.project.medizio.exception.AccountSuspended;
-import com.project.medizio.exception.DoctorNotVerified;
+import com.project.medizio.exception.AccountSuspendedException;
+import com.project.medizio.exception.DoctorNotVerifiedException;
 import com.project.medizio.repository.DoctorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -64,9 +64,9 @@ public class DoctorService {
         }
 
         if(!existing.getVerified())
-            throw new DoctorNotVerified("Doctor not authenticated");
+            throw new DoctorNotVerifiedException("Doctor not authenticated");
         if(existing.getAccountStatus() == AccountStatus.SUSPENDED)
-            throw new AccountSuspended("Account temporarily suspended");
+            throw new AccountSuspendedException("Account temporarily suspended");
 
         return res;
     }
@@ -79,9 +79,9 @@ public class DoctorService {
         String email = jwtUtil.extractKey(token);
         Doctor doctor = doctorRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
         if(!doctor.getVerified())
-            throw new DoctorNotVerified("Doctor not authenticated");
+            throw new DoctorNotVerifiedException("Doctor not authenticated");
         if(doctor.getAccountStatus() == AccountStatus.SUSPENDED)
-            throw new AccountSuspended("Account temporarily suspended");
+            throw new AccountSuspendedException("Account temporarily suspended");
         return doctor;
     }
 
