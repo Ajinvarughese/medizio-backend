@@ -28,7 +28,6 @@ public class AiChatController {
             @RequestParam("userId") Long userId,
             @RequestPart(value = "patient_report", required = false) MultipartFile patientReport
     ) throws IOException {
-
         Patient patient = patientService.getUserById(userId);
 
         AiChat aiChat = new AiChat();
